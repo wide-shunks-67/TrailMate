@@ -1,0 +1,282 @@
+/* ===== TrailMate Custom Styles ===== */
+
+/* Hero gradient */
+.hero-gradient {
+    background: linear-gradient(135deg, #065F46 0%, #047857 40%, #059669 70%, #34D399 100%);
+}
+
+/* Leaf pattern overlay */
+.leaf-pattern {
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 Q35 15 30 25 Q25 15 30 5Z' fill='%23ffffff' opacity='0.08'/%3E%3Cpath d='M10 35 Q15 45 10 55 Q5 45 10 35Z' fill='%23ffffff' opacity='0.06'/%3E%3Cpath d='M50 30 Q55 40 50 50 Q45 40 50 30Z' fill='%23ffffff' opacity='0.07'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+}
+
+/* Interest chips */
+.interest-chip {
+    cursor: pointer;
+}
+
+.interest-label {
+    display: block;
+    text-align: center;
+    padding: 0.625rem 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid #D1FAE5;
+    background: #ECFDF5;
+    color: #065F46;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.interest-label:hover {
+    border-color: #6EE7B7;
+    background: #D1FAE5;
+    transform: translateY(-1px);
+}
+
+.interest-input:checked + .interest-label {
+    background: #065F46;
+    color: white;
+    border-color: #065F46;
+    box-shadow: 0 4px 12px rgba(6, 95, 70, 0.3);
+    transform: translateY(-1px);
+}
+
+/* Loading animation */
+.loading-dots {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #047857;
+    animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+    0%, 80%, 100% {
+        transform: scale(0.6);
+        opacity: 0.4;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Adventure cards */
+.adventure-card {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid #D1FAE5;
+    border-left: 4px solid #047857;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.adventure-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -4px rgba(6, 95, 70, 0.15);
+    border-left-color: #065F46;
+}
+
+/* Challenge card */
+.challenge-card {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-radius: 1rem;
+    border: 2px solid #FDE68A;
+    padding: 2rem;
+    box-shadow: 0 8px 16px -4px rgba(245, 158, 11, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.challenge-card::before {
+    content: '⚡';
+    position: absolute;
+    top: -10px;
+    right: -5px;
+    font-size: 6rem;
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+/* Expandable sections */
+.expandable-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #E5E7EB;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #065F46;
+    transition: color 0.2s;
+}
+
+.expandable-header:hover {
+    color: #047857;
+}
+
+.expandable-header .arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.75rem;
+}
+
+.expandable-header.open .arrow {
+    transform: rotate(180deg);
+}
+
+.expandable-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease;
+    padding: 0;
+}
+
+.expandable-content.open {
+    max-height: 300px;
+    padding: 0.75rem 0;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.badge-duration {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.badge-difficulty-easy {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.badge-difficulty-moderate {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+.badge-difficulty-challenging {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Utility */
+.hidden {
+    display: none !important;
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #ECFDF5;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #A7F3D0;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6EE7B7;
+}
+
+/* Mobile tweaks */
+@media (max-width: 640px) {
+    .hero-gradient {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+    }
+
+    .hero-gradient h1 {
+        font-size: 2.5rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .hero-gradient,
+    footer,
+    #loading,
+    #error-message,
+    button,
+    .interest-chip,
+    select,
+    input {
+        display: none !important;
+    }
+
+    .adventure-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ccc;
+    }
+
+    .hidden {
+        display: block !important;
+    }
+
+    body {
+        background: white;
+    }
+}
+
+/* Fade-in animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.fade-in-up:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.fade-in-up:nth-child(3) {
+    animation-delay: 0.3s;
+}

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 TrailMate — AI Outdoor Adventure Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            50: '#ECFDF5', 100: '#D1FAE5', 200: '#A7F3D0',
+                            300: '#6EE7B7', 400: '#34D399', 500: '#10B981',
+                            600: '#047857', 700: '#065F46', 800: '#064E3B',
+                            900: '#022C22'
+                        },
+                        earth: {
+                            50: '#FFFBEB', 100: '#FEF3C7', 200: '#FDE68A',
+                            300: '#FCD34D', 400: '#FBBF24', 500: '#F59E0B',
+                            600: '#D97706', 700: '#92400E', 800: '#78350F',
+                            900: '#451A03'
+                        },
+                        cream: {
+                            50: '#FEFCE8', 100: '#FEF9C3', 200: '#FEF08A'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['"Segoe UI"', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+</head>
+<body class="bg-cream-50 min-h-screen font-display text-gray-800">
+
+    <!-- Hero Section -->
+    <header class="hero-gradient text-white py-16 px-4 text-center relative overflow-hidden">
+        <div class="absolute top-4 right-4 z-30">
+            <button onclick="viewSavedTrails()" class="bg-white/20 hover:bg-white/30 text-white backdrop-blur-md border border-white/30 font-semibold py-2 px-4 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                <span>💾</span> My Saved Trails
+            </button>
+        </div>
+        <div class="absolute inset-0 opacity-10">
+            <div class="leaf-pattern"></div>
+        </div>
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 tracking-tight">
+                🌿 TrailMate
+            </h1>
+            <p class="text-xl md:text-2xl font-light mb-2 text-green-100">
+                Your AI-Powered Outdoor Adventure Companion
+            </p>
+            <p class="text-sm md:text-base text-green-200 opacity-80">
+                Powered by <strong>Gemma</strong> — Google's Open-Weight AI &bull; Built for Hacktoberfest 2026
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 -mt-6 relative z-20">
+
+        <!-- Input Form Card -->
+        <section class="bg-white rounded-2xl shadow-xl p-6 md:p-8 mb-8 border border-green-100">
+            <h2 class="text-2xl font-bold text-forest-700 mb-6 flex items-center gap-2">
+                <span>📍</span> Plan Your Adventure
+            </h2>
+
+            <!-- Location Input -->
+            <div class="mb-6 relative">
+                <label for="location" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Where are you?
+                </label>
+                <input type="text" id="location"
+                    placeholder="Enter your city, e.g. Mumbai, India"
+                    class="w-full px-4 py-3 rounded-xl border-2 border-green-200 focus:border-forest-500 focus:ring-2 focus:ring-forest-200 outline-none transition-all text-lg"
+                    autocomplete="off">
+                <!-- Autocomplete Dropdown -->
+                <ul id="location-suggestions" class="absolute z-50 w-full bg-white border border-green-200 rounded-xl shadow-xl mt-2 hidden max-h-60 overflow-y-auto divide-y divide-gray-100">
+                </ul>
+            </div>
+
+            <!-- Interests -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    What do you enjoy? <span class="text-gray-400 font-normal">(select any)</span>
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Hiking" class="interest-input sr-only">
+                        <span class="interest-label">🥾 Hiking</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Birdwatching" class="interest-input sr-only">
+                        <span class="interest-label">🐦 Birdwatching</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Photography" class="interest-input sr-only">
+                        <span class="interest-label">📸 Photography</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Gardening" class="interest-input sr-only">
+                        <span class="interest-label">🌱 Gardening</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Stargazing" class="interest-input sr-only">
+                        <span class="interest-label">🌙 Stargazing</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Running" class="interest-input sr-only">
+                        <span class="interest-label">🏃 Running</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Cycling" class="interest-input sr-only">
+                        <span class="interest-label">🚴 Cycling</span>
+                    </label>
+                    <label class="interest-chip">
+                        <input type="checkbox" value="Nature Walks" class="interest-input sr-only">
+                        <span class="interest-label">🌳 Nature Walks</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Fitness Level -->
+            <div class="mb-8">
+                <label for="fitness" class="block text-sm font-semibold text-gray-700 mb-2">
+                    Fitness Level
+                </label>
+                <select id="fitness"
+                    class="w-full md:w-64 px-4 py-3 rounded-xl border-2 border-green-200 focus:border-forest-500 focus:ring-2 focus:ring-forest-200 outline-none transition-all bg-white text-lg">
+                    <option value="easy">🌱 Easy — Relaxed pace</option>
+                    <option value="moderate" selected>🌿 Moderate — Some effort</option>
+                    <option value="challenging">🏔️ Challenging — Push limits</option>
+                </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="btn-adventures" onclick="getAdventures()"
+                    class="flex-1 bg-forest-600 hover:bg-forest-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-95 text-lg shadow-lg shadow-green-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    🌿 Get Adventures
+                </button>
+                <button id="btn-challenge" onclick="getDailyChallenge()"
+                    class="flex-1 bg-earth-500 hover:bg-earth-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-95 text-lg shadow-lg shadow-amber-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    ⚡ Daily Challenge
+                </button>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loading" class="hidden mt-8 text-center">
+                <div class="loading-dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <p class="text-forest-600 mt-3 font-medium" id="loading-text">
+                    Gemma is planning your adventure...
+                </p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="error-message" class="hidden mt-6 bg-red-50 border border-red-200 rounded-xl p-4 text-red-700">
+            </div>
+        </section>
+
+        <!-- Weather Widget -->
+        <section id="weather-section" class="hidden mb-8">
+            <div class="bg-white rounded-2xl shadow-lg p-6 border border-blue-100 max-w-2xl mx-auto">
+                <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center justify-center gap-2 text-center">
+                    <span id="weather-emoji">☀️</span> Weather in <span id="weather-location" class="text-forest-600"></span>
+                </h3>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                    <div class="bg-blue-50 rounded-xl p-4 transition-transform hover:scale-105">
+                        <p class="text-3xl font-bold text-blue-600 mb-1" id="weather-temp">--</p>
+                        <p class="text-sm text-gray-500 font-medium">Temperature</p>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-4 transition-transform hover:scale-105">
+                        <p class="text-xl font-bold text-green-700 mb-1 flex items-center justify-center h-9" id="weather-condition">--</p>
+                        <p class="text-sm text-gray-500 font-medium">Conditions</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Adventures Section -->
+        <section id="adventures-section" class="hidden mb-8">
+            <h2 class="text-2xl font-bold text-forest-700 mb-6 flex items-center gap-2">
+                🗺️ Your Outdoor Adventures
+            </h2>
+            <div id="adventures-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Adventure cards inserted by JS -->
+            </div>
+        </section>
+
+        <!-- Daily Challenge Section -->
+        <section id="challenge-section" class="hidden mb-8">
+            <h2 class="text-2xl font-bold text-earth-700 mb-6 flex items-center gap-2">
+                ⚡ Your Daily Touch Grass Challenge
+            </h2>
+            <div id="challenge-card">
+                <!-- Challenge card inserted by JS -->
+            </div>
+        </section>
+
+        <!-- Saved Trails Section -->
+        <section id="saved-trails-section" class="hidden mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-blue-700 flex items-center gap-2">
+                    💾 My Saved Trails
+                </h2>
+                <button onclick="location.reload()" class="text-sm text-gray-500 hover:text-gray-800 underline">Close</button>
+            </div>
+            <div id="saved-trails-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Saved trail cards inserted by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-forest-800 text-green-100 py-8 px-4 mt-12">
+        <div class="max-w-4xl mx-auto text-center">
+            <p class="text-lg mb-2">
+                Built with 🌿 for <strong>Hacktoberfest 2026</strong>
+            </p>
+            <p class="text-sm text-green-300 mb-4">
+                Powered by <strong>Gemma</strong> Open-Weight AI &bull; Open-Meteo Weather
+            </p>
+            <div class="flex justify-center gap-6 text-sm">
+                <a href="#" class="hover:text-white transition-colors" id="github-link">GitHub</a>
+                <a href="https://dev.to/anshtayal02" class="hover:text-white transition-colors">DEV Profile</a>
+                <a href="https://dev.to/challenges/hf26" class="hover:text-white transition-colors">Challenge Hub</a>
+            </div>
+            <p class="text-xs text-green-400 mt-4">
+                Made by Ansh Tayal &bull; Open-source under MIT License
+            </p>
+        </div>
+    </footer>
+
+    <!-- Roadmap Modal -->
+    <div id="roadmap-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div class="bg-[#fdfbf7] rounded-[2rem] shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col transform transition-all border-4 border-forest-600 overflow-hidden relative">
+            
+            <!-- Modal Header -->
+            <div class="bg-forest-600 text-white p-5 md:p-6 flex justify-between items-start relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-20 text-9xl">🌿</div>
+                <div class="relative z-10">
+                    <h2 id="modal-title" class="text-2xl md:text-3xl font-black mb-1 tracking-tight">Loading Roadmap...</h2>
+                    <p id="modal-destination" class="text-forest-200 text-sm md:text-base font-bold flex items-center gap-1"><span></span></p>
+                </div>
+                <div class="flex items-center gap-2 relative z-10">
+                    <button onclick="downloadRoadmap()" id="btn-download-roadmap" class="hidden text-forest-700 bg-green-100 hover:bg-white font-bold py-2 px-4 rounded-full text-sm transition-colors shadow-sm flex items-center gap-1">
+                        <span>📥</span> <span class="hidden md:inline">Save Offline</span>
+                    </button>
+                    <button onclick="closeRoadmap()" class="text-white hover:text-green-200 hover:bg-white/20 transition-colors rounded-full p-2 h-10 w-10 flex items-center justify-center font-bold text-2xl leading-none">
+                        &times;
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Body (Scrollable) -->
+            <div id="modal-body" class="p-6 md:p-8 overflow-y-auto flex-1 relative bg-gradient-to-b from-[#fdfbf7] to-green-50/30 min-h-[60vh]">
+                
+                <!-- Loading State -->
+                <div id="modal-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-[#fdfbf7] z-10">
+                    <div class="text-7xl animate-bounce mb-6">🚶‍♂️🌲</div>
+                    <h3 class="text-forest-700 font-black text-2xl mb-2 text-center">Scouting the trail...</h3>
+                    <p class="text-gray-500 font-medium text-center">Gemma is drawing your interactive map!</p>
+                </div>
+
+                <!-- Content State -->
+                <div id="modal-content" class="hidden space-y-8">
+                    <!-- Where to Go (Treasure Map Style) -->
+                    <div class="relative">
+                        <div class="absolute -left-3 -top-3 text-4xl transform -rotate-12">🗺️</div>
+                        <section class="bg-white p-6 pt-8 rounded-3xl shadow-sm border-2 border-dashed border-earth-300">
+                            <h3 class="text-xl font-black text-earth-800 mb-2 uppercase tracking-wide text-center">Starting Point</h3>
+                            <p id="rm-where" class="text-gray-700 leading-relaxed text-center font-medium"></p>
+                        </section>
+                    </div>
+
+                    <!-- Timeline (Trail Markers) -->
+                    <section>
+                        <h3 class="text-xl font-black text-forest-800 mb-6 flex items-center gap-2 justify-center uppercase tracking-wide">
+                            <span>📍</span> The Trail Guide
+                        </h3>
+                        <div id="rm-timeline" class="space-y-0 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-transparent before:via-forest-300 before:to-transparent">
+                            <!-- Injected via JS -->
+                        </div>
+                    </section>
+
+                    <!-- Nature Tips (Flashcards) -->
+                    <section class="bg-green-800 p-6 rounded-3xl shadow-inner text-white">
+                        <h3 class="text-xl font-black mb-4 flex items-center gap-2 justify-center uppercase tracking-wide text-green-100">
+                            <span>🌿</span> Immersion Quests
+                        </h3>
+                        <ul id="rm-tips" class="grid grid-cols-1 gap-3">
+                            <!-- Injected via JS -->
+                        </ul>
+                    </section>
+
+                    <!-- Pro Tip -->
+                    <section class="bg-gradient-to-br from-amber-100 to-orange-50 p-6 rounded-3xl shadow-sm border-2 border-amber-200 text-center relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 text-6xl opacity-20">💡</div>
+                        <h4 class="font-black text-amber-800 mb-2 uppercase tracking-wide">Guide's Secret Tip</h4>
+                        <p id="rm-pro" class="text-amber-900 font-bold text-lg"></p>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=4"></script>
+</body>
+</html>
