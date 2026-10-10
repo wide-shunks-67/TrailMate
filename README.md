@@ -163,7 +163,7 @@ trailmate/
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/anshtayal02/trailmate.git
+git clone https://github.com/wide-shunks-67/trailmate.git
 cd trailmate
 ```
 
