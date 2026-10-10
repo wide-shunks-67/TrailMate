@@ -1,5 +1,4 @@
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:8000' : 'https://trailmate-backend.onrender.com';
-
+const API_BASE = 'https://trailmate-2xn4.onrender.com';
 // ===== TrailMate — Frontend Logic =====
 
 // Weather code → emoji mapping
