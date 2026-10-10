@@ -12,9 +12,33 @@ const WEATHER_EMOJI = {
     95: '⛈️', 96: '⛈️', 99: '⛈️'
 };
 
+
+async function fetchWeatherLocally(locationStr) {
+    try {
+        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json`);
+        const geoData = await geoRes.json();
+        if (!geoData.results || geoData.results.length === 0) return null;
+        
+        const lat = geoData.results[0].latitude;
+        const lon = geoData.results[0].longitude;
+        const name = geoData.results[0].name;
+
+        const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto`);
+        const weatherData = await weatherRes.json();
+        
+        const code = weatherData.current.weather_code;
+        weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather';
+        
+        return { location: name, weather: weatherData.current, coordinates: [lat, lon] };
+    } catch (e) {
+        console.error('Local weather fetch failed', e);
+        return null;
+    }
+}
+
 const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
 
-async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
+
 
 // ----- Utility Functions -----
 
@@ -346,7 +370,7 @@ async function playTTS(button, text) {
 
 const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
 
-async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
+
 
         button.innerHTML = '<span class="text-lg">🔊</span> Playing...';
         await audio.play();
@@ -548,7 +572,7 @@ function addToCalendar(title, description, location, durationStr) {
 
 const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
 
-async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
+
 
     // Build the .ics file content
     const icsData = [
