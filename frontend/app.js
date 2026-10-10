@@ -104,8 +104,8 @@ function renderWeather(weather, locationName) {
     document.getElementById('weather-location').textContent = locationName;
     document.getElementById('weather-temp').textContent = `${temp}°C`;
     document.getElementById('weather-condition').textContent = description;
-    document.getElementById('weather-humidity').textContent = `${humidity}%`;
-    document.getElementById('weather-wind').textContent = `${wind} km/h`;
+    
+    
 
     section.classList.remove('hidden');
 }
