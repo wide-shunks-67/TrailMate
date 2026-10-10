@@ -105,9 +105,11 @@ class AdventureRequest(BaseModel):
     location: str
     interests: List[str]
     fitness_level: str
+    weather_context: str = "Unknown weather"
 
 class ChallengeRequest(BaseModel):
     location: str
+    weather_context: str = "Unknown weather"
 
 # --- Helper Functions ---
 
@@ -128,20 +130,25 @@ async def get_coordinates(location: str):
 
 async def get_weather(lat: float, lon: float):
     """Fetch current and daily weather data from Open-Meteo."""
-    async with httpx.AsyncClient() as client:
-        response = await client.get(
-            "https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": lat,
-                "longitude": lon,
-                "current": "temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m",
-                "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
-                "timezone": "auto"
-            }
-        )
-        if response.status_code != 200:
-            raise HTTPException(status_code=500, detail="Failed to fetch weather data")
-        return response.json()
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current": "temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m",
+                    "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code",
+                    "timezone": "auto"
+                }
+            )
+            if response.status_code != 200:
+                print(f"Weather API Error: {response.text}")
+                return {} # Fallback if Render IP is rate-limited
+            return response.json()
+    except Exception as e:
+        print(f"Weather Fetch Exception: {e}")
+        return {}
 
 # --- Endpoints ---
 
@@ -165,19 +172,12 @@ async def generate_adventures(req: AdventureRequest):
         raise HTTPException(status_code=500, detail="AI Client not initialized")
 
     try:
-        lat, lon, location_name = await get_coordinates(req.location)
-        weather_data = await get_weather(lat, lon)
-        
-        current_weather = weather_data.get("current", {})
-        temp = current_weather.get("temperature_2m")
-        weather_code = current_weather.get("weather_code")
-        condition = get_weather_description(weather_code) if weather_code is not None else "Unknown"
         season = get_season()
         
         prompt = (
-            f"Generate 3 highly specific, real outdoor adventures for {location_name}.\n"
-            f"CRITICAL: Name REAL, actual parks, trails, or lakes near {location_name}. No generic ideas.\n"
-            f"Current weather: {temp}°C, {condition}.\n"
+            f"Generate 3 highly specific, real outdoor adventures for {req.location}.\n"
+            f"CRITICAL: Name REAL, actual parks, trails, or lakes near {req.location}. No generic ideas.\n"
+            f"Current weather: {req.weather_context}.\n"
             f"Season: {season}.\n"
             f"User interests: {', '.join(req.interests)}.\n"
             f"Fitness level: {req.fitness_level}.\n\n"
@@ -213,12 +213,6 @@ async def generate_adventures(req: AdventureRequest):
             adventures = parsed
         
         return {
-            "location": location_name,
-            "coordinates": {"lat": lat, "lon": lon},
-            "weather": {
-                "temperature": temp,
-                "condition": condition
-            },
             "adventures": adventures
         }
         
@@ -233,19 +227,12 @@ async def generate_challenge(req: ChallengeRequest):
         raise HTTPException(status_code=500, detail="AI Client not initialized")
 
     try:
-        lat, lon, location_name = await get_coordinates(req.location)
-        weather_data = await get_weather(lat, lon)
-        
-        current_weather = weather_data.get("current", {})
-        temp = current_weather.get("temperature_2m")
-        weather_code = current_weather.get("weather_code")
-        condition = get_weather_description(weather_code) if weather_code is not None else "Unknown"
         season = get_season()
         
         prompt = (
-            f"Generate ONE quick 'Touch Grass' outdoor challenge for {location_name}.\n"
-            f"CRITICAL: Name a REAL, specific park, street, or landmark in {location_name} to do this.\n"
-            f"Current weather: {temp}°C, {condition}.\n"
+            f"Generate ONE quick 'Touch Grass' outdoor challenge for {req.location}.\n"
+            f"CRITICAL: Name a REAL, specific park, street, or landmark in {req.location} to do this.\n"
+            f"Current weather: {req.weather_context}.\n"
             f"Season: {season}.\n"
             "This should be a 15-30 minute easy and fun activity to get outside immediately.\n"
             "Return EXACTLY a JSON object with these keys: title, specific_destination, description, duration, tip."
@@ -268,12 +255,6 @@ async def generate_challenge(req: ChallengeRequest):
         challenge = json.loads(response.text)
         
         return {
-            "location": location_name,
-            "coordinates": {"lat": lat, "lon": lon},
-            "weather": {
-                "temperature": temp,
-                "condition": condition
-            },
             "challenge": challenge
         }
         

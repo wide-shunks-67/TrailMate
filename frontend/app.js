@@ -12,6 +12,10 @@ const WEATHER_EMOJI = {
     95: '⛈️', 96: '⛈️', 99: '⛈️'
 };
 
+const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
+
+async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
+
 // ----- Utility Functions -----
 
 function getLocation() {
@@ -201,10 +205,25 @@ async function getAdventures() {
     showLoading('🌿 Gemma is crafting your outdoor adventures...');
 
     try {
+        const localWeatherData = await fetchWeatherLocally(location);
+        let weatherContext = "Unknown weather";
+        let finalLocation = location;
+        
+        if (localWeatherData) {
+            finalLocation = localWeatherData.location;
+            weatherContext = localWeatherData.weather.temperature_2m + '°C, ' + localWeatherData.weather.weather_description;
+            renderWeather(localWeatherData.weather, finalLocation);
+        }
+
         const response = await fetch(API_BASE + '/api/adventures', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ location, interests, fitness_level })
+            body: JSON.stringify({ 
+                location: finalLocation, 
+                interests, 
+                fitness_level,
+                weather_context: weatherContext
+            })
         });
 
         if (!response.ok) {
@@ -214,50 +233,50 @@ async function getAdventures() {
 
         const data = await response.json();
 
-        // Render weather from the response
-        if (data.weather) {
-            renderWeatherFromAdventure(data.weather, data.location, data.coordinates);
-        }
-
         // Render adventure cards
-        const grid = document.getElementById('adventures-grid');
-        grid.innerHTML = '';
-
-        const adventures = data.adventures || [];
-        adventures.forEach((adv, i) => {
-            grid.appendChild(renderAdventureCard(adv, i));
+        const container = document.getElementById('adventures-container');
+        container.innerHTML = '';
+        data.adventures.forEach((adv, idx) => {
+            container.innerHTML += renderAdventureCard(adv, idx);
         });
 
+        document.getElementById('weather-section').classList.remove('hidden');
         document.getElementById('adventures-section').classList.remove('hidden');
         document.getElementById('challenge-section').classList.add('hidden');
-
-        // Smooth scroll to results
-        setTimeout(() => {
-            document.getElementById('adventures-section').scrollIntoView({
-                behavior: 'smooth', block: 'start'
-            });
-        }, 200);
+        document.getElementById('saved-trails-section').classList.add('hidden');
+        document.getElementById('adventures-section').scrollIntoView({ behavior: 'smooth' });
 
     } catch (err) {
-        showError(err.message || 'Failed to generate adventures. Please try again.');
+        showError(err.message);
     } finally {
         hideLoading();
     }
 }
-
 async function getDailyChallenge() {
     hideError();
     if (!validate()) return;
 
     const location = getLocation();
-
-    showLoading('⚡ Generating your Touch Grass challenge...');
+    showLoading('⚡ Generating a quick outdoor challenge...');
 
     try {
+        const localWeatherData = await fetchWeatherLocally(location);
+        let weatherContext = "Unknown weather";
+        let finalLocation = location;
+        
+        if (localWeatherData) {
+            finalLocation = localWeatherData.location;
+            weatherContext = localWeatherData.weather.temperature_2m + '°C, ' + localWeatherData.weather.weather_description;
+            renderWeather(localWeatherData.weather, finalLocation);
+        }
+
         const response = await fetch(API_BASE + '/api/challenge', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ location })
+            body: JSON.stringify({ 
+                location: finalLocation,
+                weather_context: weatherContext
+            })
         });
 
         if (!response.ok) {
@@ -267,41 +286,23 @@ async function getDailyChallenge() {
 
         const data = await response.json();
 
-        // Render weather
-        if (data.weather) {
-            renderWeatherFromAdventure(data.weather, data.location, data.coordinates);
-        }
-
         // Render challenge card
-        const container = document.getElementById('challenge-card');
-        container.innerHTML = '';
-        container.appendChild(renderChallengeCard(data.challenge));
+        const container = document.getElementById('challenge-container');
+        container.innerHTML = renderChallengeCard(data.challenge);
 
+        document.getElementById('weather-section').classList.remove('hidden');
         document.getElementById('challenge-section').classList.remove('hidden');
         document.getElementById('adventures-section').classList.add('hidden');
-
-        // Smooth scroll
-        setTimeout(() => {
-            document.getElementById('challenge-section').scrollIntoView({
-                behavior: 'smooth', block: 'start'
-            });
-        }, 200);
+        document.getElementById('saved-trails-section').classList.add('hidden');
+        document.getElementById('challenge-section').scrollIntoView({ behavior: 'smooth' });
 
     } catch (err) {
-        showError(err.message || 'Failed to generate challenge. Please try again.');
+        showError(err.message);
     } finally {
         hideLoading();
     }
 }
-
 // Render weather from the simplified adventure/challenge response
-function renderWeatherFromAdventure(weather, locationName, coords) {
-    const section = document.getElementById('weather-section');
-    document.getElementById('weather-location').textContent = locationName;
-    document.getElementById('weather-temp').textContent = `${weather.temperature}°C`;
-    document.getElementById('weather-condition').textContent = weather.condition;
-    section.classList.remove('hidden');
-}
 
 // ----- Keyboard Support -----
 
@@ -342,6 +343,10 @@ async function playTTS(button, text) {
             button.innerHTML = '<span class="text-lg">🔊</span> Listen Again';
             button.disabled = false;
         };
+
+const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
+
+async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
 
         button.innerHTML = '<span class="text-lg">🔊</span> Playing...';
         await audio.play();
@@ -540,6 +545,10 @@ function addToCalendar(title, description, location, durationStr) {
     const formatICSDate = (date) => {
         return date.toISOString().replace(/-|:|\.\d+/g, '');
     };
+
+const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle', 61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain', 71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail' };
+
+async function fetchWeatherLocally(locationStr) { try { const geoRes = await fetch("https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationStr)}&count=1&language=en&format=json"); const geoData = await geoRes.json(); if (!geoData.results || geoData.results.length === 0) return null; const lat = geoData.results[0].latitude; const lon = geoData.results[0].longitude; const name = geoData.results[0].name; const weatherRes = await fetch("https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&timezone=auto"); const weatherData = await weatherRes.json(); const code = weatherData.current.weather_code; weatherData.current.weather_description = WEATHER_CODES[code] || 'Unknown weather'; return { location: name, weather: weatherData.current, coordinates: [lat, lon] }; } catch (e) { console.error('Local weather fetch failed', e); return null; } }
 
     // Build the .ics file content
     const icsData = [
