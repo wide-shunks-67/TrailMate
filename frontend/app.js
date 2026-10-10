@@ -261,7 +261,7 @@ async function getAdventures() {
         const container = document.getElementById('adventures-grid');
         container.innerHTML = '';
         data.adventures.forEach((adv, idx) => {
-            container.innerHTML += renderAdventureCard(adv, idx);
+            container.appendChild(renderAdventureCard(adv, idx));
         });
 
         document.getElementById('weather-section').classList.remove('hidden');
@@ -312,7 +312,7 @@ async function getDailyChallenge() {
 
         // Render challenge card
         const container = document.getElementById('challenge-card');
-        container.innerHTML = renderChallengeCard(data.challenge);
+        container.innerHTML = ''; container.appendChild(renderChallengeCard(data.challenge));
 
         document.getElementById('weather-section').classList.remove('hidden');
         document.getElementById('challenge-section').classList.remove('hidden');
