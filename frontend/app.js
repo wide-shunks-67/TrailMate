@@ -258,7 +258,7 @@ async function getAdventures() {
         const data = await response.json();
 
         // Render adventure cards
-        const container = document.getElementById('adventures-container');
+        const container = document.getElementById('adventures-grid');
         container.innerHTML = '';
         data.adventures.forEach((adv, idx) => {
             container.innerHTML += renderAdventureCard(adv, idx);
@@ -311,7 +311,7 @@ async function getDailyChallenge() {
         const data = await response.json();
 
         // Render challenge card
-        const container = document.getElementById('challenge-container');
+        const container = document.getElementById('challenge-card');
         container.innerHTML = renderChallengeCard(data.challenge);
 
         document.getElementById('weather-section').classList.remove('hidden');
