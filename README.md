@@ -258,26 +258,7 @@ TrailMate provides a clean, predictable RESTful API:
 
 > *The UI features a soothing nature-inspired palette (forest greens, warm ambers, sandstone tones) designed to keep information clear and readable in direct sunlight.*
 <img width="1917" height="976" alt="image" src="https://github.com/user-attachments/assets/ca988eeb-12dc-42ab-8711-bfc8fa32bdaa" />
-
-```
-+-----------------------------------------------------------------------+
-|  🌿 TrailMate — AI Outdoor Adventure Companion                       |
-+-----------------------------------------------------------------------+
-|  [ Location: Banff, Alberta       ]  [ Activity: Day Hike ▾ ] [ Plan ]|
-+-----------------------------------------------------------------------+
-|  🌤️ Current Weather: 14°C | 💨 8 km/h | 💧 45% Humidity | ☀️ UV: Mod   |
-+-----------------------------------------------------------------------+
-|  📍 Recommended Trails            |  🎒 Weather-Adaptive Packing List |
-|  -------------------------------  |  -------------------------------- |
-|  • Plain of Six Glaciers (11 km)  |  [x] Moisture-wicking base layer  |
-|    Moderate | Alpine Views        |  [x] Lightweight windbreaker     |
-|                                   |  [x] 2.5L Water bladder           |
-|  • Johnston Canyon Upper Falls    |  [x] High-calorie trail mix       |
-|    Easy | Forest & Waterfalls     |  [x] Bear spray + whistle         |
-+-----------------------------------------------------------------------+
-|  🤖 Gemma Trail Copilot: "Conditions at high elevation will drop..."  |
-+-----------------------------------------------------------------------+
-```
+<img width="1917" height="977" alt="image" src="https://github.com/user-attachments/assets/7c7da4ab-d71e-452c-a79a-88020419af29" />
 
 ---
 
