@@ -381,34 +381,53 @@ const WEATHER_CODES = { 0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3
     }
 }
 
+function getUserId() {
+    let id = localStorage.getItem('trailmate_user_id');
+    if (!id) {
+        id = 'user_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+        localStorage.setItem('trailmate_user_id', id);
+    }
+    return id;
+}
+
 async function saveAdventure(button, title, description, duration, difficulty) {
     const originalText = button.innerHTML;
     button.innerHTML = 'Saving...';
     button.disabled = true;
 
+    const userId = getUserId();
+    const trailData = {
+        user_id: userId,
+        title, description, duration, difficulty,
+        location: getLocation() || "Unknown Location",
+        saved_at: new Date().toISOString()
+    };
+
+    // 1. Save to private local storage immediately
     try {
-        const response = await fetch(API_BASE + '/api/save', {
+        let localSaved = JSON.parse(localStorage.getItem('trailmate_saved_trails') || '[]');
+        if (!localSaved.some(t => t.title === title)) {
+            localSaved.unshift(trailData);
+            localStorage.setItem('trailmate_saved_trails', JSON.stringify(localSaved));
+        }
+    } catch (e) {
+        console.error("Local storage save error", e);
+    }
+
+    // 2. Also sync to MongoDB on backend
+    try {
+        await fetch(API_BASE + '/api/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title, description, duration, difficulty,
-                location: getLocation() || "Unknown Location"
-            })
+            body: JSON.stringify(trailData)
         });
-
-        if (!response.ok) {
-            if (response.status === 500) throw new Error("MongoDB not configured. Add MONGODB_URI to .env");
-            throw new Error("Failed to save trail");
-        }
-
-        button.innerHTML = '<span class="text-lg">✅</span> Saved!';
-        button.classList.replace('bg-blue-50', 'bg-green-100');
-        button.classList.replace('text-blue-700', 'text-green-800');
     } catch (err) {
-        showError(err.message);
-        button.innerHTML = originalText;
-        button.disabled = false;
+        console.warn("MongoDB sync skipped, saved locally.", err);
     }
+
+    button.innerHTML = '<span class="text-lg">✅</span> Saved!';
+    button.classList.replace('bg-blue-50', 'bg-green-100');
+    button.classList.replace('text-blue-700', 'text-green-800');
 }
 
 // ----- View Saved Trails Logic -----
@@ -417,42 +436,81 @@ async function viewSavedTrails() {
     hideError();
     showLoading('Fetching your saved trails...');
     
+    const userId = getUserId();
+    let trails = [];
+
+    // 1. Read from private local storage
     try {
-        const response = await fetch(API_BASE + '/api/saved');
-        if (!response.ok) {
-            if (response.status === 500) throw new Error("MongoDB not configured. Add MONGODB_URI to .env");
-            throw new Error("Failed to fetch saved trails");
+        trails = JSON.parse(localStorage.getItem('trailmate_saved_trails') || '[]');
+    } catch (e) {
+        trails = [];
+    }
+
+    // 2. Fetch user's trails from MongoDB to sync
+    try {
+        const response = await fetch(`${API_BASE}/api/saved?user_id=${encodeURIComponent(userId)}`);
+        if (response.ok) {
+            const remoteTrails = await response.json();
+            if (Array.isArray(remoteTrails) && remoteTrails.length > 0) {
+                const titles = new Set(trails.map(t => t.title));
+                remoteTrails.forEach(rt => {
+                    if (!titles.has(rt.title)) {
+                        trails.push(rt);
+                        titles.add(rt.title);
+                    }
+                });
+                localStorage.setItem('trailmate_saved_trails', JSON.stringify(trails));
+            }
         }
-        
-        const trails = await response.json();
-        
-        const grid = document.getElementById('saved-trails-grid');
-        grid.innerHTML = '';
-        
-        if (trails.length === 0) {
-            grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">No saved trails yet. Go find some adventures!</div>';
-        } else {
-            trails.forEach((trail, i) => {
-                grid.appendChild(renderSavedTrailCard(trail, i));
-            });
-        }
-        
-        document.getElementById('weather-section').classList.add('hidden');
-        document.getElementById('adventures-section').classList.add('hidden');
-        document.getElementById('challenge-section').classList.add('hidden');
-        document.getElementById('saved-trails-section').classList.remove('hidden');
-        
-        setTimeout(() => {
-            document.getElementById('saved-trails-section').scrollIntoView({
-                behavior: 'smooth', block: 'start'
-            });
-        }, 200);
-        
     } catch (err) {
-        showError(err.message);
+        console.warn("MongoDB fetch skipped, using local storage", err);
     } finally {
         hideLoading();
     }
+
+    const grid = document.getElementById('saved-trails-grid');
+    grid.innerHTML = '';
+    
+    if (!trails || trails.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">No saved trails yet. Go find some adventures!</div>';
+    } else {
+        trails.forEach((trail, i) => {
+            grid.appendChild(renderSavedTrailCard(trail, i));
+        });
+    }
+    
+    document.getElementById('weather-section').classList.add('hidden');
+    document.getElementById('adventures-section').classList.add('hidden');
+    document.getElementById('challenge-section').classList.add('hidden');
+    document.getElementById('saved-trails-section').classList.remove('hidden');
+    
+    setTimeout(() => {
+        document.getElementById('saved-trails-section').scrollIntoView({
+            behavior: 'smooth', block: 'start'
+        });
+    }, 200);
+}
+
+async function deleteSavedTrail(title, id) {
+    try {
+        let localSaved = JSON.parse(localStorage.getItem('trailmate_saved_trails') || '[]');
+        localSaved = localSaved.filter(t => t.title !== title);
+        localStorage.setItem('trailmate_saved_trails', JSON.stringify(localSaved));
+    } catch (e) {
+        console.error("Local storage delete error", e);
+    }
+
+    if (id) {
+        try {
+            await fetch(`${API_BASE}/api/saved/${id}?user_id=${encodeURIComponent(getUserId())}`, {
+                method: 'DELETE'
+            });
+        } catch (e) {
+            console.error("Remote delete error", e);
+        }
+    }
+
+    viewSavedTrails();
 }
 
 function renderSavedTrailCard(trail, index) {
@@ -462,6 +520,8 @@ function renderSavedTrailCard(trail, index) {
     
     const diffClass = getDifficultyBadgeClass(trail.difficulty);
     const dateStr = trail.saved_at ? new Date(trail.saved_at).toLocaleDateString() : 'Recently';
+    const safeTitle = (trail.title || '').replace(/'/g, "\\'");
+    const safeDesc = (trail.description || '').replace(/'/g, "\\'");
     
     card.innerHTML = `
         <div class="flex justify-between items-start mb-2">
@@ -476,9 +536,12 @@ function renderSavedTrailCard(trail, index) {
             <span class="badge ${diffClass}">📊 ${trail.difficulty}</span>
         </div>
         
-        <div>
-            <button onclick="playTTS(this, 'Listen to your saved adventure: ${trail.title}. ${trail.description}')" class="w-full text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
-                <span class="text-lg">🔊</span> Play Audio Guide
+        <div class="flex gap-2">
+            <button onclick="playTTS(this, 'Listen to your saved adventure: ${safeTitle}. ${safeDesc}')" class="flex-1 text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-colors">
+                <span class="text-lg">🔊</span> Audio Guide
+            </button>
+            <button onclick="deleteSavedTrail('${safeTitle}', '${trail._id || ''}')" class="text-sm bg-red-50 hover:bg-red-100 text-red-600 font-semibold py-2 px-3 rounded-lg transition-colors" title="Delete from saved trails">
+                🗑️
             </button>
         </div>
     `;

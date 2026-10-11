@@ -266,6 +266,7 @@ async def generate_challenge(req: ChallengeRequest):
 # --- ElevenLabs & MongoDB Endpoints ---
 
 class SaveAdventureRequest(BaseModel):
+    user_id: Optional[str] = "default_user"
     title: str
     description: str
     duration: str
@@ -282,14 +283,30 @@ async def save_adventure(req: SaveAdventureRequest):
     return {"status": "success"}
 
 @app.get("/api/saved")
-async def get_saved_adventures():
+async def get_saved_adventures(user_id: Optional[str] = Query(None)):
     if db is None:
         raise HTTPException(status_code=500, detail="MongoDB not configured")
-    cursor = db.adventures.find().sort("saved_at", -1)
+    if not user_id:
+        return []
+    cursor = db.adventures.find({"user_id": user_id}).sort("saved_at", -1)
     adventures = await cursor.to_list(length=50)
     for adv in adventures:
         adv["_id"] = str(adv["_id"])
     return adventures
+
+@app.delete("/api/saved/{trail_id}")
+async def delete_saved_adventure(trail_id: str, user_id: Optional[str] = Query(None)):
+    if db is None:
+        raise HTTPException(status_code=500, detail="MongoDB not configured")
+    try:
+        from bson import ObjectId
+        query: Dict[str, Any] = {"_id": ObjectId(trail_id)}
+        if user_id:
+            query["user_id"] = user_id
+        res = await db.adventures.delete_one(query)
+        return {"deleted": res.deleted_count > 0}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 class TTSRequest(BaseModel):
     text: str
