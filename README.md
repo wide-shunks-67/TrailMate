@@ -257,6 +257,7 @@ TrailMate provides a clean, predictable RESTful API:
 ## 📸 Screenshots & UI Preview
 
 > *The UI features a soothing nature-inspired palette (forest greens, warm ambers, sandstone tones) designed to keep information clear and readable in direct sunlight.*
+<img width="1917" height="976" alt="image" src="https://github.com/user-attachments/assets/ca988eeb-12dc-42ab-8711-bfc8fa32bdaa" />
 
 ```
 +-----------------------------------------------------------------------+
