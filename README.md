@@ -66,9 +66,14 @@ TrailMate embraces this philosophy not as a cliché, but as a deliberate design 
 
 - 🗺️ **Intelligent Trail Matchmaker**: Context-aware trail recommendations matched to your available time, fitness tier, terrain preference, and party composition (solo, family, dog-friendly).
 - ⛅ **Hyperlocal Weather & Risk Synthesis**: Seamless Open-Meteo integration fetching temperature, humidity, wind gusts, precipitation probability, and weather codes, analyzed dynamically by Gemma to detect risks like hypothermia, flash floods, or lightning.
+- 🧭 **Interactive Deep-Dive Roadmap**: Click any adventure card to generate an immersive, step-by-step nature itinerary featuring starting point coordinates, trail markers, sensory immersion quests, and secret ranger tips.
+- 📅 **Add to Calendar (.ics)**: Native calendar invite generator exporting `.ics` files directly from the browser to schedule outdoor excursions in Google Calendar, Apple Calendar, or Outlook.
+- 💾 **Private User-Isolated Saved Trails**: Device-scoped trail bookmarking powered by private `localStorage` with MongoDB Atlas cloud synchronization, keeping each user's saved adventures strictly private.
+- 📴 **Offline Roadmap Export**: Download full deep-dive adventure roadmaps as plain text (`.txt`) files so you can navigate the outdoors with zero cellular connection.
 - 🎒 **Dynamic Gear Checklist Engine**: Generates granular, weather-adapted packing lists categorized into Essentials, Safety, Clothing Layers, and Hydration/Nutrition based on current atmospheric conditions.
 - 🐾 **Flora, Fauna & Ecological Advisor**: Field guidance on regional wildlife encounters, poison plant identification reminders, and Leave-No-Trace practices.
 - 🚨 **Wilderness Protocol & Safety Briefing**: Pre-trip emergency planning checklists including emergency contacts protocol, turnaround times, and elevation adjustment steps.
+- 🔊 **ElevenLabs Audio Guides**: One-click neural voice text-to-speech audio narration for trail descriptions and saved itineraries.
 - 💬 **Conversational Nature Copilot**: Natural, empathetic dialogue powered by `gemma-4-26b-a4b-it` to answer complex "what-if" outdoor questions.
 - 🍃 **Serene Nature-Themed UI**: Calming earth tones and forest greens styled with Tailwind CSS, built with zero heavyweight frontend frameworks for lightweight mobile browser loading.
 
@@ -129,7 +134,10 @@ flowchart TD
 | **Gemma 4** | Foundation Model | Outdoor Reasoning | Google's premier open-weight model (`gemma-4-26b-a4b-it`), offering enterprise-grade reasoning with privacy. |
 | **Open-Meteo** | Weather API | Meteorological Data | Free, open-access, zero-API-key weather and geocoding engine with high resolution. |
 | **HTTPX** | HTTP Client | Async Weather Requests | Modern, fully async HTTP client for non-blocking external API calls. |
+| **MongoDB Atlas** | Database | User-Scoped Saved Trails | Cloud NoSQL document database for persisting private user-tagged trail bookmarks. |
+| **ElevenLabs** | Voice AI | Audio Trail Guide | High-fidelity neural voice synthesis engine narrating trail itineraries aloud. |
 | **Tailwind CSS** | Styling | Nature-Themed UI | CDN-delivered utility CSS crafted with earth greens, forest palettes, and clean typography. |
+| **Vercel & Render** | Cloud Hosting | Decoupled Deployment | Edge static delivery for the frontend on Vercel and scalable Python hosting on Render. |
 
 ---
 
@@ -191,16 +199,13 @@ GEMINI_API_KEY=your_actual_api_key_here
 ```
 
 ### 6. Launch the Application
-Start the FastAPI server with hot reloading enabled:
+Start the FastAPI server from the `backend/` directory:
 ```bash
+cd backend
 uvicorn main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Open your browser and navigate to:
-```
-http://127.0.0.1:8000
-```
-Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
+Open `frontend/index.html` in your web browser. Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
 
 ---
 
@@ -214,6 +219,10 @@ TrailMate provides a clean, predictable RESTful API:
 | `POST` | `/api/adventures` | Analyzes weather context and preferences to return curated itineraries. |
 | `POST` | `/api/challenge` | Generates a rapid, 15-minute "Touch Grass" micro-challenge. |
 | `POST` | `/api/roadmap` | Generates a deep-dive, step-by-step nature guide for a specific adventure. |
+| `POST` | `/api/save` | Persists a bookmarked adventure to MongoDB Atlas tagged by user ID. |
+| `GET` | `/api/saved` | Retrieves private saved adventures for a specific user (`?user_id=`). |
+| `DELETE` | `/api/saved/{trail_id}` | Removes a specific saved trail for a user. |
+| `POST` | `/api/tts` | Synthesizes trail descriptions into audio via ElevenLabs. |
 
 ### Sample Request: Trail Recommendations
 `POST /api/adventures`
